@@ -63,6 +63,10 @@
   "testling": {
     "harness": "mocha"
   },
+  "mocha": {
+    "require": ["should", "coffeescript/register"],
+    "extension": ["coffee", "js"]
+  },
   "license": "MIT",
   "repository": {
     "type": "git",

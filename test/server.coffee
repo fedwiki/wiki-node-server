@@ -8,26 +8,19 @@ argv = require('../lib/defaultargs.coffee')({data: path.join('/tmp', 'sfwtests',
 
 describe 'server', ->
   app = {}
-  before((done) ->
-    # as starting the server this was does not create a sitemap file, create an empty one
+  before(->
     sitemapLoc = path.join('/tmp', 'sfwtests', testid, 'status', 'sitemap.json')
     fs.mkdirSync path.join('/tmp', 'sfwtests', testid)
     fs.mkdirSync path.join('/tmp', 'sfwtests', testid, 'status')
     fs.writeFileSync sitemapLoc, JSON.stringify([])
-
     app = server(argv)
-    app.once("owner-set", ->
-      app.listen app.startOpts.port, app.startOpts.host, done
-    ))
-
-
-  request = request('http://localhost:55555')
+  )
 
   # location of the test page
   loc = path.join('/tmp', 'sfwtests', testid, 'pages', 'adsf-test-page')
 
   it 'factories should return a list of plugin', () ->
-    await request
+    await request(app)
       .get('/system/factories.json')
       .expect(200)
       .expect('Content-Type', /json/)
@@ -36,7 +29,7 @@ describe 'server', ->
         res.body[1].category.should.equal('format')
 
   it 'new site should have an empty list of pages', () ->
-    await request
+    await request(app)
       .get('/system/slugs.json')
       .expect(200)
       .expect('Content-Type', /json/)
@@ -62,7 +55,7 @@ describe 'server', ->
       date: 1234567890123
       })
 
-    request
+    request(app)
       .put('/page/adsf-test-page/action')
       .send("action=" + body)
       .expect(200)
@@ -72,7 +65,7 @@ describe 'server', ->
   it 'should move the paragraphs to the order given ', () ->
     body = '{ "type": "move", "order": [ "a1", "a3", "a2", "a4"] }'
 
-    request
+    request(app)
       .put('/page/adsf-test-page/action')
       .send("action=" + body)
       .expect(200)
@@ -98,7 +91,7 @@ describe 'server', ->
       item: {id: 'a5', type: 'paragraph', text: 'this is the NEW paragrpah'}
     })
 
-    request
+    request(app)
       .put('/page/adsf-test-page/action')
       .send("action=" + body)
       .expect(200)
@@ -121,7 +114,7 @@ describe 'server', ->
       id: 'a2'
     })
 
-    request
+    request(app)
       .put('/page/adsf-test-page/action')
       .send("action=" + body)
       .expect(200)
@@ -147,7 +140,7 @@ describe 'server', ->
       id: 'a3'
     })
 
-    request
+    request(app)
       .put('/page/adsf-test-page/action')
       .send("action=" + body)
       .expect(200)
@@ -168,7 +161,7 @@ describe 'server', ->
       type: 'asdf'
       })
 
-    request
+    request(app)
       .put('/page/adsf-test-page/action')
       .send("action=" + body)
       .expect(500)
@@ -194,7 +187,7 @@ describe 'server', ->
       id: 'c1'
     })
 
-    request
+    request(app)
       .put('/page/adsf-test-page/action')
       .send("action=" + body)
       .expect(409)
@@ -210,7 +203,7 @@ describe 'server', ->
         throw err
 
   it 'site should now have one page', () ->
-    request
+    request(app)
       .get('/system/slugs.json')
       .expect(200)
       .expect('Content-Type', /json/)
